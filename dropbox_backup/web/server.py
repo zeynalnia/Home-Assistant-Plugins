@@ -30,6 +30,7 @@ def create_app(dropbox_auth, scheduler, run_backup_fn) -> web.Application:
     app.router.add_get("/auth", handle_auth)
     app.router.add_post("/auth", handle_auth_submit)
     app.router.add_post("/trigger", handle_trigger)
+    app.router.add_get("/status", handle_status)
 
     return app
 
@@ -88,6 +89,11 @@ async def handle_auth_submit(request: web.Request) -> web.Response:
         return web.Response(text=html, content_type="text/html")
 
 
+def _wants_json(request: web.Request) -> bool:
+    accept = request.headers.get("Accept", "")
+    return "application/json" in accept
+
+
 async def handle_trigger(request: web.Request) -> web.Response:
     """Manually trigger a backup."""
     scheduler = request.app["scheduler"]
@@ -96,9 +102,33 @@ async def handle_trigger(request: web.Request) -> web.Response:
         result = await run_backup_fn()
         scheduler.last_run = datetime.now()
         scheduler.last_result = result
+        if _wants_json(request):
+            return web.json_response({"status": "success", "result": result})
         raise web.HTTPFound("./")
     except web.HTTPFound:
         raise
     except Exception as exc:
         _logger.error("Manual backup failed: %s", exc)
+        if _wants_json(request):
+            return web.json_response(
+                {"status": "error", "error": str(exc)}, status=500
+            )
         return web.Response(text=f"Backup failed: {exc}", status=500)
+
+
+async def handle_status(request: web.Request) -> web.Response:
+    """Return current addon state as JSON."""
+    scheduler = request.app["scheduler"]
+    auth = request.app["dropbox_auth"]
+
+    def _fmt_dt(dt: datetime | None) -> str | None:
+        return dt.isoformat() if dt else None
+
+    data = {
+        "authorized": auth.is_authorized(),
+        "last_run": _fmt_dt(scheduler.last_run),
+        "next_run": _fmt_dt(scheduler.next_run),
+        "last_result": scheduler.last_result,
+        "interval_hours": scheduler.interval_hours,
+    }
+    return web.json_response(data)

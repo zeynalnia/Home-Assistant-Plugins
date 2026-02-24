@@ -4,6 +4,8 @@ import asyncio
 import logging
 import sys
 
+from datetime import datetime
+
 from aiohttp import web
 
 from options import load_options
@@ -11,6 +13,9 @@ from dropbox_auth import DropboxAuth
 from backup_engine import run_backup
 from scheduler import BackupScheduler
 from web.server import create_app
+from events import fire_event
+from sensors import update_sensors
+from stdin_reader import start_stdin_reader
 
 logging.basicConfig(
     level=logging.INFO,
@@ -35,19 +40,52 @@ def main() -> None:
     auth = DropboxAuth(app_key, app_secret)
 
     async def do_backup() -> dict:
+        await update_sensors("running", scheduler, auth)
         dbx = auth.get_client()
         if dbx is None:
             _logger.warning("Skipping backup: not authorized with Dropbox")
-            return {"error": "Not authorized"}
-        return await run_backup(dbx, backup_path, max_backups)
+            result = {"error": "Not authorized"}
+            await fire_event("dropbox_backup.failed", {
+                **result,
+                "timestamp": datetime.now().isoformat(),
+            })
+            await update_sensors("not_authorized", scheduler, auth)
+            return result
+        try:
+            result = await run_backup(dbx, backup_path, max_backups)
+        except Exception as exc:
+            result = {"error": str(exc)}
+            await fire_event("dropbox_backup.failed", {
+                **result,
+                "timestamp": datetime.now().isoformat(),
+            })
+            await update_sensors("failed", scheduler, auth)
+            raise
+        await fire_event("dropbox_backup.success", {
+            "uploaded": result.get("uploaded", []),
+            "skipped": result.get("skipped", []),
+            "errors": result.get("errors", []),
+            "timestamp": datetime.now().isoformat(),
+        })
+        await update_sensors("success", scheduler, auth)
+        return result
 
     scheduler = BackupScheduler(interval_hours, do_backup)
     app = create_app(auth, scheduler, do_backup)
 
+    stdin_task: asyncio.Task | None = None
+
     async def on_startup(_app: web.Application) -> None:
+        nonlocal stdin_task
         scheduler.start()
+        stdin_task = await start_stdin_reader(do_backup, scheduler)
+        await update_sensors("idle", scheduler, auth)
 
     async def on_cleanup(_app: web.Application) -> None:
+        nonlocal stdin_task
+        if stdin_task is not None:
+            stdin_task.cancel()
+            stdin_task = None
         scheduler.stop()
 
     app.on_startup.append(on_startup)

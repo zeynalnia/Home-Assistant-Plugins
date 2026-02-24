@@ -1,5 +1,5 @@
 name: "Dropbox Backup"
-version: "0.3.1"
+version: "0.4.0"
 slug: "dropbox_backup"
 description: "Back up Home Assistant snapshots to Dropbox"
 url: "https://github.com/zeynalnia/Home-Assistant-Plugins"
@@ -11,6 +11,8 @@ arch:
   - i386
 hassio_api: true
 hassio_role: "backup"
+homeassistant_api: true
+stdin: true
 init: false
 ingress: true
 ingress_port: 8099
