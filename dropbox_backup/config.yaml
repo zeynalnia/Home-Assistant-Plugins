@@ -1,0 +1,27 @@
+name: "Dropbox Backup"
+version: "0.1.0"
+slug: "dropbox_backup"
+description: "Back up Home Assistant snapshots to Dropbox"
+url: "https://github.com/your-repo/dropbox-backup-addon"
+arch:
+  - amd64
+  - aarch64
+  - armv7
+  - armhf
+  - i386
+hassio_api: true
+hassio_role: "backup"
+ingress: true
+ingress_port: 8099
+options:
+  dropbox_app_key: ""
+  dropbox_app_secret: ""
+  backup_interval_hours: 24
+  max_backups_in_dropbox: 10
+  dropbox_backup_path: "/HomeAssistant/Backups"
+schema:
+  dropbox_app_key: str
+  dropbox_app_secret: str
+  backup_interval_hours: int
+  max_backups_in_dropbox: int
+  dropbox_backup_path: str
