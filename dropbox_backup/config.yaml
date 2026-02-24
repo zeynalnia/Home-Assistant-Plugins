@@ -2,7 +2,7 @@ name: "Dropbox Backup"
 version: "0.1.0"
 slug: "dropbox_backup"
 description: "Back up Home Assistant snapshots to Dropbox"
-url: "https://github.com/your-repo/dropbox-backup-addon"
+url: "https://github.com/zeynalnia/Home-Assistant-Plugins"
 arch:
   - amd64
   - aarch64
