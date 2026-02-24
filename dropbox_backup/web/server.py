@@ -2,6 +2,7 @@
 
 import logging
 import os
+from datetime import datetime
 from pathlib import Path
 
 from aiohttp import web
@@ -85,7 +86,7 @@ async def handle_trigger(request: web.Request) -> web.Response:
     run_backup_fn = request.app["run_backup_fn"]
     try:
         result = await run_backup_fn()
-        scheduler.last_run = __import__("datetime").datetime.now()
+        scheduler.last_run = datetime.now()
         scheduler.last_result = result
         raise web.HTTPFound(_ingress_path() + "/")
     except web.HTTPFound:

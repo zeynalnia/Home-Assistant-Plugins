@@ -139,9 +139,18 @@ async def _enforce_retention(
             if hasattr(e, "server_modified")
             else datetime.min,
         )
+        uploaded = load_uploaded()
         while len(entries) > max_backups:
             oldest = entries.pop(0)
             _logger.info("Retention: deleting %s", oldest.path_display)
             dbx.files_delete_v2(oldest.path_display)
+            # Remove from tracking state
+            slugs_to_remove = [
+                slug for slug, info in uploaded.items()
+                if info.get("dropbox_path") == oldest.path_display
+            ]
+            for slug in slugs_to_remove:
+                del uploaded[slug]
+        save_uploaded(uploaded)
     except dropbox.exceptions.ApiError as exc:
         _logger.error("Retention check failed: %s", exc)
