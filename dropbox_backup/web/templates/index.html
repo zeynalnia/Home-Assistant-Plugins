@@ -28,11 +28,11 @@
     <div class="status ok">Authorized with Dropbox</div>
     {% else %}
     <div class="status warn">Not authorized — connect your Dropbox account to start backing up.</div>
-    <a href="{{ ingress_path }}/auth" class="btn btn-primary">Authorize with Dropbox</a>
+    <a href="./auth" class="btn btn-primary">Authorize with Dropbox</a>
     {% endif %}
 
     {% if authorized %}
-    <form action="{{ ingress_path }}/trigger" method="post" style="display:inline;">
+    <form action="./trigger" method="post" style="display:inline;">
         <button type="submit" class="btn btn-success">Backup Now</button>
     </form>
     {% endif %}

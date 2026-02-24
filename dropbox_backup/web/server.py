@@ -1,7 +1,6 @@
 """Web server for the Dropbox Backup addon (HA ingress)."""
 
 import logging
-import os
 from datetime import datetime
 from pathlib import Path
 
@@ -35,11 +34,6 @@ def create_app(dropbox_auth, scheduler, run_backup_fn) -> web.Application:
     return app
 
 
-def _ingress_path() -> str:
-    """Get the ingress path prefix from env."""
-    return os.environ.get("INGRESS_PATH", "")
-
-
 async def handle_index(request: web.Request) -> web.Response:
     """Render the status page."""
     env = request.app["jinja_env"]
@@ -49,7 +43,6 @@ async def handle_index(request: web.Request) -> web.Response:
     template = env.get_template("index.html")
     html = template.render(
         authorized=auth.is_authorized(),
-        ingress_path=_ingress_path(),
         last_run=scheduler.last_run,
         next_run=scheduler.next_run,
         last_result=scheduler.last_result,
@@ -67,7 +60,6 @@ async def handle_auth(request: web.Request) -> web.Response:
     template = env.get_template("auth.html")
     html = template.render(
         auth_url=auth_url,
-        ingress_path=_ingress_path(),
     )
     return web.Response(text=html, content_type="text/html")
 
@@ -78,10 +70,10 @@ async def handle_auth_submit(request: web.Request) -> web.Response:
     data = await request.post()
     auth_code = data.get("auth_code", "")
     if not auth_code:
-        raise web.HTTPFound(_ingress_path() + "/auth")
+        raise web.HTTPFound("./auth")
     try:
         auth.finish_auth(auth_code)
-        raise web.HTTPFound(_ingress_path() + "/")
+        raise web.HTTPFound("./")
     except web.HTTPFound:
         raise
     except Exception as exc:
@@ -91,7 +83,6 @@ async def handle_auth_submit(request: web.Request) -> web.Response:
         template = env.get_template("auth.html")
         html = template.render(
             auth_url=auth_url,
-            ingress_path=_ingress_path(),
             error=str(exc),
         )
         return web.Response(text=html, content_type="text/html")
@@ -105,7 +96,7 @@ async def handle_trigger(request: web.Request) -> web.Response:
         result = await run_backup_fn()
         scheduler.last_run = datetime.now()
         scheduler.last_result = result
-        raise web.HTTPFound(_ingress_path() + "/")
+        raise web.HTTPFound("./")
     except web.HTTPFound:
         raise
     except Exception as exc:

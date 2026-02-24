@@ -41,13 +41,13 @@
         </ol>
     </div>
 
-    <form action="{{ ingress_path }}/auth" method="post" class="code-form">
+    <form action="./auth" method="post" class="code-form">
         <label for="auth_code"><strong>Authorization code:</strong></label>
         <br><br>
         <input type="text" id="auth_code" name="auth_code" placeholder="Paste your authorization code here" required>
         <br>
         <button type="submit" class="btn btn-success">Submit</button>
-        <a href="{{ ingress_path }}/" class="btn btn-secondary">Cancel</a>
+        <a href="./" class="btn btn-secondary">Cancel</a>
     </form>
 </body>
 </html>
