@@ -15,27 +15,24 @@ class DropboxAuth:
     def __init__(self, app_key: str, app_secret: str):
         self.app_key = app_key
         self.app_secret = app_secret
-        self._flow: dropbox.DropboxOAuth2Flow | None = None
+        self._flow: dropbox.DropboxOAuth2FlowNoRedirect | None = None
 
-    def start_auth(self, redirect_uri: str) -> str:
-        """Start OAuth2 flow. Returns the authorization URL."""
-        self._flow = dropbox.DropboxOAuth2Flow(
+    def start_auth(self) -> str:
+        """Start OAuth2 flow (no redirect). Returns the authorization URL."""
+        self._flow = dropbox.DropboxOAuth2FlowNoRedirect(
             consumer_key=self.app_key,
             consumer_secret=self.app_secret,
-            redirect_uri=redirect_uri,
-            session={},
-            csrf_token_session_key="dropbox-auth-csrf-token",
             token_access_type="offline",
         )
         return self._flow.start()
 
-    def finish_auth(self, query_params: dict) -> dict:
-        """Complete OAuth2 flow with the callback query params.
+    def finish_auth(self, auth_code: str) -> dict:
+        """Complete OAuth2 flow with the authorization code from the user.
         Returns token dict and saves to disk.
         """
         if self._flow is None:
             raise RuntimeError("OAuth flow not started")
-        result = self._flow.finish(query_params)
+        result = self._flow.finish(auth_code.strip())
         tokens = {
             "access_token": result.access_token,
             "refresh_token": result.refresh_token,

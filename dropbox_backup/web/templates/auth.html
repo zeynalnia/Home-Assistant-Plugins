@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authorize Dropbox - Dropbox Backup</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 700px; margin: 40px auto; padding: 0 20px; color: #333; background: #fafafa; }
+        h1 { color: #0061fe; }
+        .steps { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin: 16px 0; }
+        .steps ol { padding-left: 20px; }
+        .steps li { margin: 12px 0; line-height: 1.6; }
+        .auth-link { display: inline-block; padding: 10px 20px; background: #0061fe; color: #fff; border-radius: 6px; text-decoration: none; font-size: 14px; }
+        .auth-link:hover { background: #0050d4; }
+        .code-form { margin-top: 16px; }
+        .code-form input[type="text"] { width: 100%; padding: 10px; font-size: 14px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-family: monospace; }
+        .btn { display: inline-block; padding: 10px 20px; border: none; border-radius: 6px; color: #fff; cursor: pointer; text-decoration: none; font-size: 14px; margin-top: 8px; }
+        .btn-success { background: #28a745; }
+        .btn-success:hover { background: #218838; }
+        .btn-secondary { background: #6c757d; }
+        .btn-secondary:hover { background: #5a6268; }
+        .error { background: #f8d7da; color: #721c24; padding: 12px 16px; border-radius: 8px; margin: 16px 0; }
+    </style>
+</head>
+<body>
+    <h1>Authorize with Dropbox</h1>
+
+    {% if error %}
+    <div class="error">Authorization failed: {{ error }}. Please try again.</div>
+    {% endif %}
+
+    <div class="steps">
+        <ol>
+            <li>Click the link below to open Dropbox authorization:
+                <br><br>
+                <a href="{{ auth_url }}" target="_blank" class="auth-link">Open Dropbox Authorization</a>
+            </li>
+            <li>Sign in to Dropbox (if needed) and click <strong>"Allow"</strong>.</li>
+            <li>Copy the <strong>authorization code</strong> shown by Dropbox.</li>
+            <li>Paste it below and click <strong>Submit</strong>.</li>
+        </ol>
+    </div>
+
+    <form action="{{ ingress_path }}/auth" method="post" class="code-form">
+        <label for="auth_code"><strong>Authorization code:</strong></label>
+        <br><br>
+        <input type="text" id="auth_code" name="auth_code" placeholder="Paste your authorization code here" required>
+        <br>
+        <button type="submit" class="btn btn-success">Submit</button>
+        <a href="{{ ingress_path }}/" class="btn btn-secondary">Cancel</a>
+    </form>
+</body>
+</html>

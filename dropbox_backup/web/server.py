@@ -29,7 +29,7 @@ def create_app(dropbox_auth, scheduler, run_backup_fn) -> web.Application:
 
     app.router.add_get("/", handle_index)
     app.router.add_get("/auth", handle_auth)
-    app.router.add_get("/callback", handle_callback)
+    app.router.add_post("/auth", handle_auth_submit)
     app.router.add_post("/trigger", handle_trigger)
 
     return app
@@ -59,25 +59,42 @@ async def handle_index(request: web.Request) -> web.Response:
 
 
 async def handle_auth(request: web.Request) -> web.Response:
-    """Start the Dropbox OAuth2 flow."""
+    """Show the Dropbox authorization URL and code input form."""
+    env = request.app["jinja_env"]
     auth = request.app["dropbox_auth"]
-    ingress = _ingress_path()
-    redirect_uri = f"{request.scheme}://{request.host}{ingress}/callback"
-    auth_url = auth.start_auth(redirect_uri)
-    raise web.HTTPFound(auth_url)
+    auth_url = auth.start_auth()
+
+    template = env.get_template("auth.html")
+    html = template.render(
+        auth_url=auth_url,
+        ingress_path=_ingress_path(),
+    )
+    return web.Response(text=html, content_type="text/html")
 
 
-async def handle_callback(request: web.Request) -> web.Response:
-    """Handle the Dropbox OAuth2 callback."""
+async def handle_auth_submit(request: web.Request) -> web.Response:
+    """Handle the authorization code submitted by the user."""
     auth = request.app["dropbox_auth"]
+    data = await request.post()
+    auth_code = data.get("auth_code", "")
+    if not auth_code:
+        raise web.HTTPFound(_ingress_path() + "/auth")
     try:
-        auth.finish_auth(dict(request.query))
+        auth.finish_auth(auth_code)
         raise web.HTTPFound(_ingress_path() + "/")
+    except web.HTTPFound:
+        raise
     except Exception as exc:
-        _logger.error("OAuth callback failed: %s", exc)
-        return web.Response(
-            text=f"Authorization failed: {exc}", status=500
+        _logger.error("OAuth authorization failed: %s", exc)
+        env = request.app["jinja_env"]
+        auth_url = auth.start_auth()
+        template = env.get_template("auth.html")
+        html = template.render(
+            auth_url=auth_url,
+            ingress_path=_ingress_path(),
+            error=str(exc),
         )
+        return web.Response(text=html, content_type="text/html")
 
 
 async def handle_trigger(request: web.Request) -> web.Response:
