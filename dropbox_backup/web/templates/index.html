@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dropbox Backup</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 700px; margin: 40px auto; padding: 0 20px; color: #333; background: #fafafa; }
+        h1 { color: #0061fe; }
+        .status { padding: 12px 16px; border-radius: 8px; margin: 16px 0; }
+        .status.ok { background: #e6f4ea; color: #1e7e34; }
+        .status.warn { background: #fff3cd; color: #856404; }
+        .btn { display: inline-block; padding: 10px 20px; border: none; border-radius: 6px; color: #fff; cursor: pointer; text-decoration: none; font-size: 14px; margin: 4px; }
+        .btn-primary { background: #0061fe; }
+        .btn-primary:hover { background: #0050d4; }
+        .btn-success { background: #28a745; }
+        .btn-success:hover { background: #218838; }
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid #ddd; }
+        th { background: #f0f0f0; }
+        .info { color: #666; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <h1>Dropbox Backup</h1>
+
+    {% if authorized %}
+    <div class="status ok">Authorized with Dropbox</div>
+    {% else %}
+    <div class="status warn">Not authorized — connect your Dropbox account to start backing up.</div>
+    <a href="{{ ingress_path }}/auth" class="btn btn-primary">Authorize with Dropbox</a>
+    {% endif %}
+
+    {% if authorized %}
+    <form action="{{ ingress_path }}/trigger" method="post" style="display:inline;">
+        <button type="submit" class="btn btn-success">Backup Now</button>
+    </form>
+    {% endif %}
+
+    {% if last_run %}
+    <p class="info">Last backup: {{ last_run }}</p>
+    {% endif %}
+    {% if next_run %}
+    <p class="info">Next scheduled backup: {{ next_run }}</p>
+    {% endif %}
+    {% if last_result %}
+    <p class="info">Last result: Uploaded {{ last_result.uploaded | length }}, Skipped {{ last_result.skipped | length }}{% if last_result.errors %}, Errors: {{ last_result.errors | length }}{% endif %}</p>
+    {% endif %}
+
+    {% if uploaded %}
+    <h2>Uploaded Backups</h2>
+    <table>
+        <thead><tr><th>Name</th><th>Date</th><th>Dropbox Path</th></tr></thead>
+        <tbody>
+        {% for slug, info in uploaded.items() %}
+            <tr>
+                <td>{{ info.name }}</td>
+                <td>{{ info.date }}</td>
+                <td>{{ info.dropbox_path }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+</body>
+</html>
