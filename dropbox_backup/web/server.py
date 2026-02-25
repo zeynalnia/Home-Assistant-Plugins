@@ -125,6 +125,7 @@ async def handle_status(request: web.Request) -> web.Response:
         return dt.isoformat() if dt else None
 
     data = {
+        "state": request.app.get("backup_state", "idle"),
         "authorized": auth.is_authorized(),
         "last_run": _fmt_dt(scheduler.last_run),
         "next_run": _fmt_dt(scheduler.next_run),

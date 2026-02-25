@@ -29,7 +29,8 @@ def main() -> None:
     options = load_options()
     app_key = options.get("dropbox_app_key", "")
     app_secret = options.get("dropbox_app_secret", "")
-    interval_hours = options.get("backup_interval_hours", 24)
+    automatic_backup = options.get("automatic_backup", True)
+    interval_hours = options.get("backup_interval_hours", 24) if automatic_backup else 0
     max_backups = options.get("max_backups_in_dropbox", 10)
     backup_path = options.get("dropbox_backup_path", "/HomeAssistant/Backups")
 
@@ -39,6 +40,7 @@ def main() -> None:
     auth = DropboxAuth(app_key, app_secret)
 
     async def do_backup() -> dict:
+        app["backup_state"] = "running"
         await update_sensors("running", scheduler, auth)
         dbx = auth.get_client()
         if dbx is None:
@@ -48,6 +50,7 @@ def main() -> None:
                 **result,
                 "timestamp": datetime.now().isoformat(),
             })
+            app["backup_state"] = "not_authorized"
             await update_sensors("not_authorized", scheduler, auth)
             return result
         try:
@@ -58,6 +61,7 @@ def main() -> None:
                 **result,
                 "timestamp": datetime.now().isoformat(),
             })
+            app["backup_state"] = "failed"
             await update_sensors("failed", scheduler, auth)
             raise
         await fire_event("dropbox_backup.success", {
@@ -66,11 +70,13 @@ def main() -> None:
             "errors": result.get("errors", []),
             "timestamp": datetime.now().isoformat(),
         })
+        app["backup_state"] = "success"
         await update_sensors("success", scheduler, auth)
         return result
 
     scheduler = BackupScheduler(interval_hours, do_backup)
     app = create_app(auth, scheduler, do_backup)
+    app["backup_state"] = "idle"
 
     async def on_startup(_app: web.Application) -> None:
         scheduler.start()

@@ -1,0 +1,26 @@
+{
+  "config": {
+    "step": {
+      "confirm": {
+        "title": "Dropbox Backup",
+        "description": "The Dropbox Backup addon was automatically detected. Click submit to set up the integration."
+      },
+      "manual": {
+        "title": "Dropbox Backup",
+        "description": "Enter the hostname and port of the Dropbox Backup addon.",
+        "data": {
+          "hostname": "Hostname",
+          "port": "Port",
+          "addon_slug": "Addon slug"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot connect to the Dropbox Backup addon. Check that it is running.",
+      "addon_not_found": "Dropbox Backup addon not found on this system."
+    },
+    "abort": {
+      "already_configured": "This Dropbox Backup addon is already configured."
+    }
+  }
+}
