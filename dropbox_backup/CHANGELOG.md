@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.5.10] - 2026
+
+### Fixed
+- Bumped companion integration version to 0.1.6 so the addon re-copies the integration files (including the icon) on next restart
+
 ## [0.5.9] - 2026
 
 ### Fixed
