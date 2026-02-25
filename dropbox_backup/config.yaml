@@ -1,5 +1,5 @@
 name: "Dropbox Backup"
-version: "0.5.4"
+version: "0.5.5"
 slug: "dropbox_backup"
 description: "Back up Home Assistant snapshots to Dropbox"
 url: "https://github.com/zeynalnia/Home-Assistant-Plugins"
@@ -27,7 +27,7 @@ options:
   dropbox_backup_path: "/HomeAssistant/Backups"
 schema:
   dropbox_app_key: str
-  dropbox_app_secret: str
+  dropbox_app_secret: password
   automatic_backup: bool
   backup_interval_hours: int
   max_backups_in_dropbox: int
