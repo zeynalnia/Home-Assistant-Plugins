@@ -9,7 +9,8 @@ from typing import Any
 import aiohttp
 import voluptuous as vol
 
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import ConfigFlow
+from homeassistant.data_entry_flow import FlowResult
 from homeassistant.components.hassio import is_hassio
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
@@ -31,7 +32,7 @@ class DropboxBackupConfigFlow(ConfigFlow, domain=DOMAIN):
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    ) -> FlowResult:
         """Handle the initial step."""
         if is_hassio(self.hass):
             addon_info = await self._find_addon()
@@ -70,7 +71,7 @@ class DropboxBackupConfigFlow(ConfigFlow, domain=DOMAIN):
 
     async def async_step_confirm(
         self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    ) -> FlowResult:
         """Confirm auto-discovered addon."""
         if self._addon_slug is None:
             return self.async_abort(reason="addon_not_found")
@@ -98,7 +99,7 @@ class DropboxBackupConfigFlow(ConfigFlow, domain=DOMAIN):
 
     async def async_step_manual(
         self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    ) -> FlowResult:
         """Handle manual configuration."""
         errors: dict[str, str] = {}
 
