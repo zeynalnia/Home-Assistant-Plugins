@@ -3,8 +3,8 @@
 bashio::log.info "Starting Dropbox HA Backup addon..."
 
 # Auto-install companion integration into Home Assistant
-INTEGRATION_SRC="/app/custom_components/dropbox_backup_ha"
-INTEGRATION_DST="/config/custom_components/dropbox_backup_ha"
+INTEGRATION_SRC="/app/custom_components/dropbox_ha_backup"
+INTEGRATION_DST="/config/custom_components/dropbox_ha_backup"
 
 if [ -d "$INTEGRATION_SRC" ]; then
     mkdir -p /config/custom_components

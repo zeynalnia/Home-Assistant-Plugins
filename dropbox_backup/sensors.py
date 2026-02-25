@@ -9,7 +9,7 @@ _logger = logging.getLogger(__name__)
 
 SUPERVISOR_URL = "http://supervisor"
 SUPERVISOR_TOKEN = os.environ.get("SUPERVISOR_TOKEN", "")
-ENTITY_ID = "sensor.dropbox_backup_status"
+ENTITY_ID = "sensor.dropbox_ha_backup_status"
 
 
 async def update_sensors(state: str, scheduler, auth) -> None:

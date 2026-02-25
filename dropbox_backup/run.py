@@ -46,7 +46,7 @@ def main() -> None:
         if dbx is None:
             _logger.warning("Skipping backup: not authorized with Dropbox")
             result = {"error": "Not authorized"}
-            await fire_event("dropbox_backup.failed", {
+            await fire_event("dropbox_ha_backup.failed", {
                 **result,
                 "timestamp": datetime.now().isoformat(),
             })
@@ -57,14 +57,14 @@ def main() -> None:
             result = await run_backup(dbx, backup_path, max_backups)
         except Exception as exc:
             result = {"error": str(exc)}
-            await fire_event("dropbox_backup.failed", {
+            await fire_event("dropbox_ha_backup.failed", {
                 **result,
                 "timestamp": datetime.now().isoformat(),
             })
             app["backup_state"] = "failed"
             await update_sensors("failed", scheduler, auth)
             raise
-        await fire_event("dropbox_backup.success", {
+        await fire_event("dropbox_ha_backup.success", {
             "uploaded": result.get("uploaded", []),
             "skipped": result.get("skipped", []),
             "errors": result.get("errors", []),
