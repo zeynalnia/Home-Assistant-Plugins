@@ -88,7 +88,7 @@ def main() -> None:
     app.on_startup.append(on_startup)
     app.on_cleanup.append(on_cleanup)
 
-    _logger.info("Starting Dropbox Backup addon on port 8099")
+    _logger.info("Starting Dropbox HA Backup addon on port 8099")
     web.run_app(app, host="0.0.0.0", port=8099)
 
 

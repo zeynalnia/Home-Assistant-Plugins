@@ -85,7 +85,7 @@ class DropboxBackupConfigFlow(ConfigFlow, domain=DOMAIN):
                     errors={"base": "cannot_connect"},
                 )
             return self.async_create_entry(
-                title="Dropbox Backup",
+                title="Dropbox HA Backup",
                 data={
                     "addon_slug": self._addon_slug,
                     "hostname": self._hostname,
@@ -114,7 +114,7 @@ class DropboxBackupConfigFlow(ConfigFlow, domain=DOMAIN):
                 await self.async_set_unique_id(addon_slug)
                 self._abort_if_unique_id_configured()
                 return self.async_create_entry(
-                    title="Dropbox Backup",
+                    title="Dropbox HA Backup",
                     data={
                         "addon_slug": addon_slug,
                         "hostname": hostname,

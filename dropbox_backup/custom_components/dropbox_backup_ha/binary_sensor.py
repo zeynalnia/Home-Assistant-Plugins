@@ -46,7 +46,7 @@ class DropboxBackupAuthorizedSensor(
         self._attr_unique_id = f"{addon_slug}_authorized"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, addon_slug)},
-            name="Dropbox Backup",
+            name="Dropbox HA Backup",
             entry_type=DeviceEntryType.SERVICE,
         )
 

@@ -15,7 +15,7 @@ ENTITY_ID = "sensor.dropbox_backup_status"
 async def update_sensors(state: str, scheduler, auth) -> None:
     """POST entity state to the HA Core REST API via Supervisor proxy."""
     attributes = {
-        "friendly_name": "Dropbox Backup Status",
+        "friendly_name": "Dropbox HA Backup Status",
         "icon": "mdi:dropbox",
         "interval_hours": scheduler.interval_hours,
         "last_run": (

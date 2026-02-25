@@ -2,12 +2,12 @@
   "config": {
     "step": {
       "confirm": {
-        "title": "Dropbox Backup",
-        "description": "The Dropbox Backup addon was automatically detected. Click submit to set up the integration."
+        "title": "Dropbox HA Backup",
+        "description": "The Dropbox HA Backup addon was automatically detected. Click submit to set up the integration."
       },
       "manual": {
-        "title": "Dropbox Backup",
-        "description": "Enter the hostname and port of the Dropbox Backup addon.",
+        "title": "Dropbox HA Backup",
+        "description": "Enter the hostname and port of the Dropbox HA Backup addon.",
         "data": {
           "hostname": "Hostname",
           "port": "Port",
@@ -16,11 +16,11 @@
       }
     },
     "error": {
-      "cannot_connect": "Cannot connect to the Dropbox Backup addon. Check that it is running.",
-      "addon_not_found": "Dropbox Backup addon not found on this system."
+      "cannot_connect": "Cannot connect to the Dropbox HA Backup addon. Check that it is running.",
+      "addon_not_found": "Dropbox HA Backup addon not found on this system."
     },
     "abort": {
-      "already_configured": "This Dropbox Backup addon is already configured."
+      "already_configured": "This Dropbox HA Backup addon is already configured."
     }
   }
 }
