@@ -26,8 +26,9 @@ if [ -d "$INTEGRATION_SRC" ]; then
     fi
 fi
 
-# Start the Python web server in the background
-python3 /app/run.py &
+# Start the Python web server in the background with unbuffered output
+# (-u ensures logs appear immediately in the addon Log tab)
+python3 -u /app/run.py 2>&1 &
 PYTHON_PID=$!
 
 # Wait briefly for the web server to start
