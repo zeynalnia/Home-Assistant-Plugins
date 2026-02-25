@@ -81,11 +81,19 @@ jobs:
           build_from=$(yq -r ".build_from[\"${arch}\"]" \
             dropbox_backup/build.yaml)
           echo "build_from=${build_from}" >> "$GITHUB_OUTPUT"
+
+          if [ "${arch}" = "aarch64" ]; then
+            platform="linux/arm64"
+          else
+            platform="linux/amd64"
+          fi
+          echo "platform=${platform}" >> "$GITHUB_OUTPUT"
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: ./dropbox_backup
           file: ./dropbox_backup/Dockerfile
+          platforms: ${{ steps.build_info.outputs.platform }}
           push: true
           build-args: |
             BUILD_FROM=${{ steps.build_info.outputs.build_from }}

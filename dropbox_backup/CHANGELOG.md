@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.5.9] - 2026
+
+### Fixed
+- Fixed Docker image platform metadata for aarch64 builds (was missing `linux/arm64` platform, causing pull failures on ARM devices)
+
 ## [0.5.8] - 2026
 
 ### Added
