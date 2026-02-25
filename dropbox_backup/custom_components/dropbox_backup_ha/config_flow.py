@@ -11,7 +11,6 @@ import voluptuous as vol
 
 from homeassistant.config_entries import ConfigFlow
 from homeassistant.data_entry_flow import FlowResult
-from homeassistant.components.hassio import is_hassio
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import ADDON_SLUG_SUFFIX, DEFAULT_PORT, DOMAIN
@@ -34,7 +33,7 @@ class DropboxBackupConfigFlow(ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle the initial step."""
-        if is_hassio(self.hass):
+        if os.environ.get("SUPERVISOR_TOKEN"):
             addon_info = await self._find_addon()
             if addon_info:
                 return await self.async_step_confirm()
