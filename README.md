@@ -1,6 +1,6 @@
 # Dropbox HA Backup
 
-A Home Assistant addon that automatically backs up your HA snapshots to Dropbox.
+A Home Assistant app (add-on) that automatically backs up your HA backups to Dropbox.
 
 ## Features
 
@@ -24,7 +24,9 @@ A Home Assistant addon that automatically backs up your HA snapshots to Dropbox.
 
 ### 1. Add the repository
 
-In Home Assistant, go to **Settings > Add-ons > Add-on Store** (three-dot menu) > **Repositories** and add:
+In Home Assistant, go to **Settings > Apps > App store** (three-dot menu) > **Repositories** and add:
+
+> **Note:** On HA versions before 2026.2, the path is **Settings > Add-ons > Add-on Store**.
 
 ```
 https://github.com/zeynalnia/Home-Assistant-Plugins
@@ -32,21 +34,21 @@ https://github.com/zeynalnia/Home-Assistant-Plugins
 
 ### 2. Install the addon
 
-Find **Dropbox HA Backup** in the add-on store and click **Install**.
+Find **Dropbox HA Backup** in the app store and click **Install**.
 
 ### 3. Configure
 
-Go to the addon's **Configuration** tab and enter your Dropbox App key and secret. Adjust other options as needed (see [Configuration](#configuration) below).
+Go to the app's **Configuration** tab and enter your Dropbox App key and secret. Adjust other options as needed (see [Configuration](#configuration) below).
 
 ### 4. Start and authorize
 
-Start the addon, then open its **Web UI** (ingress). Click the authorization link, sign in to Dropbox, paste the authorization code back into the addon UI, and click **Submit**.
+Start the app, then open its **Web UI** (ingress). Click the authorization link, sign in to Dropbox, paste the authorization code back into the app UI, and click **Submit**.
 
-The addon will now back up your HA snapshots to Dropbox on the configured schedule.
+The app will now back up your HA backups to Dropbox on the configured schedule.
 
 ## Companion Integration
 
-The addon automatically installs a companion Home Assistant integration (`Dropbox HA Backup`) that provides native HA entities. It should be discovered automatically — if not, add it manually via **Settings > Devices & Services > Add Integration**.
+The app automatically installs a companion Home Assistant integration (`Dropbox HA Backup`) that provides native HA entities. It should be discovered automatically — if not, add it manually via **Settings > Devices & Services > Add Integration**.
 
 ### Entities provided
 
@@ -72,9 +74,9 @@ The addon automatically installs a companion Home Assistant integration (`Dropbo
 
 ## Architecture
 
-The addon runs as a Docker container managed by the HA Supervisor. It consists of:
+The app runs as a Docker container managed by the HA Supervisor. It consists of:
 
-- **Addon** (`dropbox_backup/`) — aiohttp web server handling OAuth, backup scheduling, and Dropbox uploads
+- **App** (`dropbox_backup/`) — aiohttp web server handling OAuth, backup scheduling, and Dropbox uploads
 - **Companion integration** (`custom_components/dropbox_ha_backup/`) — auto-installed HA integration providing entities via `DataUpdateCoordinator`
 
 ## License

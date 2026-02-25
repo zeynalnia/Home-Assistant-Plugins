@@ -12,11 +12,10 @@ hassio_api: true
 hassio_role: "backup"
 homeassistant_api: true
 map:
-  - config:rw
+  - homeassistant_config:rw
 stdin: true
 init: false
 ingress: true
-ingress_port: 8099
 options:
   dropbox_app_key: ""
   dropbox_app_secret: ""

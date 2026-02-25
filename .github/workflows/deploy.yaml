@@ -77,10 +77,9 @@ jobs:
       - name: Get build info
         id: build_info
         run: |
-          build_from=$(jq -r ".build_from[\"${{ matrix.architecture }}\"]" dropbox_backup/build.yaml 2>/dev/null || echo "")
-          if [ -z "$build_from" ]; then
-            build_from=$(yq -r ".build_from[\"${{ matrix.architecture }}\"]" dropbox_backup/build.yaml)
-          fi
+          arch="${{ matrix.architecture }}"
+          build_from=$(yq -r ".build_from[\"${arch}\"]" \
+            dropbox_backup/build.yaml)
           echo "build_from=${build_from}" >> "$GITHUB_OUTPUT"
       - name: Build and push
         uses: docker/build-push-action@v6

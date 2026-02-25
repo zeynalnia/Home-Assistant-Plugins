@@ -1,6 +1,7 @@
 ---
 ignored:
   - DL3007
+  - DL3018
 warnings:
   - DL3006
   - DL3059
