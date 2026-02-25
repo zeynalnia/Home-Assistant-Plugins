@@ -2,6 +2,22 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.5.8] - 2026
+
+### Added
+- CI/CD pipeline with parallel lint jobs, pytest, and multi-arch Docker builds
+- Automated deploy workflow for ghcr.io image publishing on release
+- Dependabot for weekly dependency updates (actions, pip, Docker)
+- Test suite for state and options modules (12 tests)
+- Linter configs for hadolint, yamllint, flake8, shellcheck, and markdownlint
+
+### Changed
+- Replaced deprecated `config:rw` mapping with `homeassistant_config:rw`
+- Updated companion integration install path from `/config` to `/homeassistant`
+- Reduced supported architectures to `amd64` and `aarch64`
+- Removed default `ingress_port` (8099 is the default)
+- Updated README navigation paths for Home Assistant 2026.2
+
 ## [0.5.7] - 2025
 
 ### Changed
