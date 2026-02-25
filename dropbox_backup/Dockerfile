@@ -9,5 +9,5 @@ RUN pip3 install --no-cache-dir --break-system-packages -r requirements.txt
 
 COPY . /app
 
-# s6-overlay service definition
+# Entrypoint script
 COPY rootfs /

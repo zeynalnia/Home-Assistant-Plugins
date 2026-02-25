@@ -10,8 +10,10 @@ PYTHON_PID=$!
 sleep 2
 
 # Read stdin in the foreground (receives hassio.app_stdin input)
+bashio::log.info "Listening for stdin commands..."
 while true; do
     read -r input || break
+    bashio::log.debug "Raw stdin input: ${input}"
     input=$(echo "$input" | jq -r . 2>/dev/null || echo "$input")
 
     if [ "$input" = "trigger" ]; then

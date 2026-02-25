@@ -1,5 +1,5 @@
 name: "Dropbox Backup"
-version: "0.4.1"
+version: "0.4.2"
 slug: "dropbox_backup"
 description: "Back up Home Assistant snapshots to Dropbox"
 url: "https://github.com/zeynalnia/Home-Assistant-Plugins"
