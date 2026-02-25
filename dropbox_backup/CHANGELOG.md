@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.5.11] - 2026
+
+### Changed
+- Replaced custom icon with official Dropbox logo for brand identification
+- Added `brand/` directory to companion integration for HA 2026.3+ local icon support (no longer requires `home-assistant/brands` PR)
+- Bumped companion integration to 0.1.7
+
 ## [0.5.10] - 2026
 
 ### Fixed
