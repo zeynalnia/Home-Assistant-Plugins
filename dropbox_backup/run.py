@@ -15,7 +15,6 @@ from scheduler import BackupScheduler
 from web.server import create_app
 from events import fire_event
 from sensors import update_sensors
-from stdin_reader import start_stdin_reader
 
 logging.basicConfig(
     level=logging.INFO,
@@ -73,19 +72,11 @@ def main() -> None:
     scheduler = BackupScheduler(interval_hours, do_backup)
     app = create_app(auth, scheduler, do_backup)
 
-    stdin_task: asyncio.Task | None = None
-
     async def on_startup(_app: web.Application) -> None:
-        nonlocal stdin_task
         scheduler.start()
-        stdin_task = await start_stdin_reader(do_backup, scheduler)
         await update_sensors("idle", scheduler, auth)
 
     async def on_cleanup(_app: web.Application) -> None:
-        nonlocal stdin_task
-        if stdin_task is not None:
-            stdin_task.cancel()
-            stdin_task = None
         scheduler.stop()
 
     app.on_startup.append(on_startup)

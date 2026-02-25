@@ -1,4 +1,27 @@
 #!/usr/bin/with-contenv bashio
 
 bashio::log.info "Starting Dropbox Backup addon..."
-exec python3 /app/run.py
+
+# Start the Python web server in the background
+python3 /app/run.py &
+PYTHON_PID=$!
+
+# Wait briefly for the web server to start
+sleep 2
+
+# Read stdin in the foreground (receives hassio.app_stdin input)
+while true; do
+    read -r input || break
+    input=$(echo "$input" | jq -r . 2>/dev/null || echo "$input")
+
+    if [ "$input" = "trigger" ]; then
+        bashio::log.info "Received stdin trigger command"
+        curl -s -X POST http://127.0.0.1:8099/trigger \
+            -H "Accept: application/json" || true
+    else
+        bashio::log.warning "Unknown stdin command: ${input}"
+    fi
+done
+
+# If stdin closes, wait for Python to finish
+wait $PYTHON_PID
