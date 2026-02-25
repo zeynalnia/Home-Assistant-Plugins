@@ -1,6 +1,5 @@
 """Main entry point for the Dropbox Backup addon."""
 
-import asyncio
 import logging
 import sys
 

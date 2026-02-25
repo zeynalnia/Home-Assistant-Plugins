@@ -1,0 +1,177 @@
+---
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  information:
+    name: Addon information
+    runs-on: ubuntu-latest
+    outputs:
+      architectures: ${{ steps.info.outputs.architectures }}
+      build: ${{ steps.info.outputs.build }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Get addon info
+        id: info
+        uses: frenck/action-addon-information@v1.4.2
+        with:
+          path: ./dropbox_backup
+
+  lint-addon:
+    name: Addon linter
+    needs: information
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Lint addon
+        uses: frenck/action-addon-linter@v2.21.0
+        with:
+          path: ./dropbox_backup
+          community: false
+
+  lint-hadolint:
+    name: Hadolint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Lint Dockerfile
+        uses: brpaz/hadolint-action@v1.5.0
+        with:
+          dockerfile: dropbox_backup/Dockerfile
+
+  lint-shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@2.0.0
+        with:
+          additional_files: "*.sh"
+        env:
+          SHELLCHECK_OPTS: "-s bash"
+
+  lint-yamllint:
+    name: YAMLlint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Lint YAML
+        uses: frenck/action-yamllint@v1.5
+
+  lint-flake8:
+    name: Flake8
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run flake8
+        uses: py-actions/flake8@v2
+        with:
+          path: dropbox_backup
+
+  lint-json:
+    name: JSON lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Validate JSON files
+        run: |
+          result=0
+          for f in $(find . -name '*.json' -not -path './.git/*'); do
+            if ! jq empty "$f" 2>/dev/null; then
+              echo "Invalid JSON: $f"
+              result=1
+            fi
+          done
+          exit $result
+
+  lint-markdown:
+    name: Markdown lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Lint Markdown
+        uses: actionshub/markdownlint@main
+
+  pytest:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          pip install -r dropbox_backup/requirements.txt
+          pip install -r tests/requirements.txt
+      - name: Run tests
+        run: pytest -v --tb=short
+        env:
+          PYTHONPATH: ${{ github.workspace }}/dropbox_backup
+
+  build:
+    name: Build (${{ matrix.architecture }})
+    needs:
+      - information
+      - lint-addon
+      - lint-hadolint
+      - lint-shellcheck
+      - lint-yamllint
+      - lint-flake8
+      - lint-json
+      - lint-markdown
+      - pytest
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        architecture: ${{ fromJson(needs.information.outputs.architectures) }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Get build info
+        id: build_info
+        run: |
+          build_from=$(jq -r ".build_from[\"${{ matrix.architecture }}\"]" dropbox_backup/build.yaml 2>/dev/null || echo "")
+          if [ -z "$build_from" ]; then
+            build_from=$(yq -r ".build_from[\"${{ matrix.architecture }}\"]" dropbox_backup/build.yaml)
+          fi
+          echo "build_from=${build_from}" >> "$GITHUB_OUTPUT"
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./dropbox_backup
+          file: ./dropbox_backup/Dockerfile
+          push: false
+          build-args: |
+            BUILD_FROM=${{ steps.build_info.outputs.build_from }}
+          tags: |
+            ghcr.io/zeynalnia/dropbox_ha_backup/${{ matrix.architecture }}:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

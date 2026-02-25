@@ -2,6 +2,9 @@
 docs/plans/
 __pycache__/
 *.pyc
+.pytest_cache/
+.coverage
+htmlcov/
 
 # Environment
 .env

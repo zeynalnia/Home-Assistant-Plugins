@@ -1,0 +1,97 @@
+---
+name: Deploy
+
+on:
+  release:
+    types:
+      - published
+  workflow_run:
+    workflows:
+      - CI
+    branches:
+      - main
+    types:
+      - completed
+
+jobs:
+  information:
+    name: Addon information
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'release' ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+    outputs:
+      architectures: ${{ steps.info.outputs.architectures }}
+      version: ${{ steps.version.outputs.version }}
+      environment: ${{ steps.version.outputs.environment }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Get addon info
+        id: info
+        uses: frenck/action-addon-information@v1.4.2
+        with:
+          path: ./dropbox_backup
+      - name: Determine version and environment
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            version="${{ github.event.release.tag_name }}"
+            version="${version#v}"
+            if [ "${{ github.event.release.prerelease }}" = "true" ]; then
+              environment="beta"
+            else
+              environment="stable"
+            fi
+          else
+            version="${GITHUB_SHA::7}"
+            environment="edge"
+          fi
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "environment=${environment}" >> "$GITHUB_OUTPUT"
+          echo "Version: ${version}, Environment: ${environment}"
+
+  deploy:
+    name: Deploy (${{ matrix.architecture }})
+    needs: information
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        architecture: ${{ fromJson(needs.information.outputs.architectures) }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get build info
+        id: build_info
+        run: |
+          build_from=$(jq -r ".build_from[\"${{ matrix.architecture }}\"]" dropbox_backup/build.yaml 2>/dev/null || echo "")
+          if [ -z "$build_from" ]; then
+            build_from=$(yq -r ".build_from[\"${{ matrix.architecture }}\"]" dropbox_backup/build.yaml)
+          fi
+          echo "build_from=${build_from}" >> "$GITHUB_OUTPUT"
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./dropbox_backup
+          file: ./dropbox_backup/Dockerfile
+          push: true
+          build-args: |
+            BUILD_FROM=${{ steps.build_info.outputs.build_from }}
+          tags: |
+            ghcr.io/zeynalnia/dropbox_ha_backup/${{ matrix.architecture }}:${{ needs.information.outputs.version }}
+            ghcr.io/zeynalnia/dropbox_ha_backup/${{ matrix.architecture }}:${{ needs.information.outputs.environment }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
