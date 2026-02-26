@@ -26,7 +26,7 @@ jobs:
       environment: ${{ steps.version.outputs.environment }}
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Get addon info
         id: info
         uses: frenck/action-addon-information@v1.4.2
@@ -63,7 +63,7 @@ jobs:
         architecture: ${{ fromJson(needs.information.outputs.architectures) }}
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
