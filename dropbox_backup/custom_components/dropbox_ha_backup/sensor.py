@@ -34,6 +34,14 @@ def _parse_iso(val: str | None) -> datetime | None:
         return None
 
 
+def _fmt_timestamp(val: str | None) -> str | None:
+    """Format an ISO-8601 string into a human-readable local timestamp."""
+    dt = _parse_iso(val)
+    if dt is None:
+        return None
+    return dt.strftime("%Y-%m-%d %H:%M:%S")
+
+
 @dataclass(frozen=True, kw_only=True)
 class DropboxBackupSensorDescription(SensorEntityDescription):
     """Describe a Dropbox Backup sensor."""
@@ -68,8 +76,12 @@ SENSOR_DESCRIPTIONS: tuple[DropboxBackupSensorDescription, ...] = (
         key="next_run",
         translation_key="next_run",
         name="Next Run",
-        device_class=SensorDeviceClass.TIMESTAMP,
-        value_fn=lambda data: _parse_iso(data.get("next_run")),
+        icon="mdi:calendar-clock",
+        value_fn=lambda data: (
+            "Manual"
+            if data.get("automatic_backup") is False
+            else _fmt_timestamp(data.get("next_run"))
+        ),
     ),
     DropboxBackupSensorDescription(
         key="uploaded_count",

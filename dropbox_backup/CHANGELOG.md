@@ -6,6 +6,8 @@ All notable changes to this project are documented in this file.
 
 ### Fixed
 - Persist last backup run timestamp to disk so the Last Run sensor survives addon restarts
+- Next Run sensor shows "Manual" instead of "Unknown" when automatic backup is disabled
+- Bumped companion integration to 0.1.8
 
 ## [0.5.11] - 2026
 

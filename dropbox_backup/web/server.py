@@ -130,5 +130,6 @@ async def handle_status(request: web.Request) -> web.Response:
         "next_run": _fmt_dt(scheduler.next_run),
         "last_result": scheduler.last_result,
         "interval_hours": scheduler.interval_hours,
+        "automatic_backup": scheduler.interval_hours > 0,
     }
     return web.json_response(data)
