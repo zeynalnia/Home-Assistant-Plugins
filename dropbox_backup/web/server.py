@@ -100,8 +100,7 @@ async def handle_trigger(request: web.Request) -> web.Response:
     run_backup_fn = request.app["run_backup_fn"]
     try:
         result = await run_backup_fn()
-        scheduler.last_run = datetime.now()
-        scheduler.last_result = result
+        scheduler.record_run(result)
         if _wants_json(request):
             return web.json_response({"status": "success", "result": result})
         raise web.HTTPFound("./")

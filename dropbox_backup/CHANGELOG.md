@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.5.12] - 2026
+
+### Fixed
+- Persist last backup run timestamp to disk so the Last Run sensor survives addon restarts
+
 ## [0.5.11] - 2026
 
 ### Changed

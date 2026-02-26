@@ -4,6 +4,8 @@ import asyncio
 import logging
 from datetime import datetime
 
+from state import load_last_run, save_last_run
+
 _logger = logging.getLogger(__name__)
 
 
@@ -14,9 +16,8 @@ class BackupScheduler:
         self.interval_hours = interval_hours
         self.backup_callback = backup_callback
         self._task: asyncio.Task | None = None
-        self.last_run: datetime | None = None
-        self.last_result: dict | None = None
         self.next_run: datetime | None = None
+        self._restore_last_run()
 
     def start(self) -> None:
         """Start the scheduler loop."""
@@ -35,6 +36,25 @@ class BackupScheduler:
             self._task = None
             _logger.info("Scheduler stopped")
 
+    def _restore_last_run(self) -> None:
+        """Restore last_run and last_result from persisted state."""
+        state = load_last_run()
+        last_run_str = state.get("last_run")
+        if last_run_str:
+            try:
+                self.last_run = datetime.fromisoformat(last_run_str)
+            except (ValueError, TypeError):
+                self.last_run = None
+        else:
+            self.last_run = None
+        self.last_result = state.get("last_result")
+
+    def record_run(self, result: dict | None) -> None:
+        """Record a backup run (scheduled or manual) and persist."""
+        self.last_run = datetime.now()
+        self.last_result = result
+        save_last_run(self.last_run.isoformat(), self.last_result)
+
     async def _loop(self) -> None:
         """Main scheduler loop."""
         interval_seconds = self.interval_hours * 3600
@@ -47,10 +67,9 @@ class BackupScheduler:
             await asyncio.sleep(interval_seconds)
             try:
                 _logger.info("Scheduled backup starting")
-                self.last_result = await self.backup_callback()
-                self.last_run = datetime.now()
-                _logger.info("Scheduled backup completed: %s", self.last_result)
+                result = await self.backup_callback()
+                self.record_run(result)
+                _logger.info("Scheduled backup completed: %s", result)
             except Exception as exc:
                 _logger.error("Scheduled backup failed: %s", exc)
-                self.last_result = {"error": str(exc)}
-                self.last_run = datetime.now()
+                self.record_run({"error": str(exc)})

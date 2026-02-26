@@ -76,3 +76,30 @@ def test_save_uploaded_creates_data_dir(tmp_path, monkeypatch):
     assert json.loads((new_dir / "uploaded.json").read_text()) == {
         "slug": {"name": "test"}
     }
+
+
+def test_load_last_run_returns_empty_when_missing():
+    """load_last_run returns empty dict if the file does not exist."""
+    assert state.load_last_run() == {}
+
+
+def test_save_and_load_last_run():
+    """Round-trip: save_last_run then load_last_run returns the same data."""
+    state.save_last_run("2026-02-26T10:00:00", {"uploaded": ["backup1"]})
+    loaded = state.load_last_run()
+    assert loaded["last_run"] == "2026-02-26T10:00:00"
+    assert loaded["last_result"] == {"uploaded": ["backup1"]}
+
+
+def test_save_last_run_with_none_result():
+    """save_last_run handles None result."""
+    state.save_last_run("2026-02-26T10:00:00", None)
+    loaded = state.load_last_run()
+    assert loaded["last_run"] == "2026-02-26T10:00:00"
+    assert loaded["last_result"] is None
+
+
+def test_load_last_run_returns_empty_on_corrupt_json():
+    """load_last_run returns empty dict on invalid JSON."""
+    state.LAST_RUN_FILE.write_text("{bad")
+    assert state.load_last_run() == {}

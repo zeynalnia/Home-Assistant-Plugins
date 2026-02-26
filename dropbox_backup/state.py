@@ -7,6 +7,7 @@ from pathlib import Path
 DATA_DIR = Path("/data")
 TOKENS_FILE = DATA_DIR / "tokens.json"
 UPLOADED_FILE = DATA_DIR / "uploaded.json"
+LAST_RUN_FILE = DATA_DIR / "last_run.json"
 
 _logger = logging.getLogger(__name__)
 
@@ -49,3 +50,21 @@ def save_uploaded(uploaded: dict) -> None:
     """Save uploaded backup tracking to disk."""
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     UPLOADED_FILE.write_text(json.dumps(uploaded, indent=2))
+
+
+def load_last_run() -> dict:
+    """Load last run state. Returns {last_run, last_result}."""
+    if not LAST_RUN_FILE.exists():
+        return {}
+    try:
+        return json.loads(LAST_RUN_FILE.read_text())
+    except (json.JSONDecodeError, OSError) as exc:
+        _logger.error("Failed to load last run state: %s", exc)
+        return {}
+
+
+def save_last_run(last_run: str, last_result: dict | None) -> None:
+    """Save last run state to disk."""
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    data = {"last_run": last_run, "last_result": last_result}
+    LAST_RUN_FILE.write_text(json.dumps(data, indent=2))

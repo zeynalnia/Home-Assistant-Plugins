@@ -15,6 +15,7 @@ def patch_state_paths(tmp_path, monkeypatch):
     monkeypatch.setattr(state, "DATA_DIR", data_dir)
     monkeypatch.setattr(state, "TOKENS_FILE", data_dir / "tokens.json")
     monkeypatch.setattr(state, "UPLOADED_FILE", data_dir / "uploaded.json")
+    monkeypatch.setattr(state, "LAST_RUN_FILE", data_dir / "last_run.json")
 
 
 @pytest.fixture(autouse=True)
