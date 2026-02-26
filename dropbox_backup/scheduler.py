@@ -2,7 +2,7 @@
 
 import asyncio
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 from state import load_last_run, save_last_run
 
@@ -42,7 +42,10 @@ class BackupScheduler:
         last_run_str = state.get("last_run")
         if last_run_str:
             try:
-                self.last_run = datetime.fromisoformat(last_run_str)
+                dt = datetime.fromisoformat(last_run_str)
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+                self.last_run = dt
             except (ValueError, TypeError):
                 self.last_run = None
         else:
@@ -51,7 +54,7 @@ class BackupScheduler:
 
     def record_run(self, result: dict | None) -> None:
         """Record a backup run (scheduled or manual) and persist."""
-        self.last_run = datetime.now()
+        self.last_run = datetime.now(timezone.utc)
         self.last_result = result
         save_last_run(self.last_run.isoformat(), self.last_result)
 
@@ -59,10 +62,8 @@ class BackupScheduler:
         """Main scheduler loop."""
         interval_seconds = self.interval_hours * 3600
         while True:
-            self.next_run = datetime.now().replace(microsecond=0)
-            self.next_run = datetime.fromtimestamp(
-                self.next_run.timestamp() + interval_seconds
-            )
+            now = datetime.now(timezone.utc).replace(microsecond=0)
+            self.next_run = now + timedelta(seconds=interval_seconds)
             _logger.info("Next backup scheduled at %s", self.next_run)
             await asyncio.sleep(interval_seconds)
             try:

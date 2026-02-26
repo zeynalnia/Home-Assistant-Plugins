@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.5.13] - 2026
+
+### Fixed
+- Fixed timezone bug: Last Run and Next Run sensors showed wrong time (offset by UTC difference) because naive local datetimes were treated as UTC
+
 ## [0.5.12] - 2026
 
 ### Fixed
