@@ -172,7 +172,7 @@ jobs:
           fi
           echo "platform=${platform}" >> "$GITHUB_OUTPUT"
       - name: Build image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./dropbox_backup
           file: ./dropbox_backup/Dockerfile
